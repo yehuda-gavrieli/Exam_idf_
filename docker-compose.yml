@@ -1,21 +1,26 @@
-version: '3.8'
+
 services:
+  zookeeper:
+    image: bitnami/zookeeper:latest
+
   kafka:
     image: bitnami/kafka:latest
     ports:
-      -9092:9092
+      - "9092:9092"
     environment:
-    -   KAFKA_LISTENERS: CONTROLLER://localhost:9091,HOST://0.0.0.0:9092,DOCKER://0.0.0.0:9093
-        KAFKA_ADVERTISED_LISTENERS: HOST://localhost:9092,DOCKER://kafka:9093
-        KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,DOCKER:PLAINTEXT,HOST:PLAINTEXT
-        KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+    depends_on:
+      - zookeeper
+      - kafka
+      - mongodb
+      - elasticsearch
 
-  
   mongodb:
     image: mongo:latest
     container_name: my_mongo
     ports:
       - "27017:27017"
+
 
 
   elasticsearch:
@@ -25,13 +30,5 @@ services:
       - "9200:9200"
 
 
-  comsumer:
-    build: 
-    depends_on:
-      - kafka
-      - mongodb
-      - elasticsearch
-    environment:
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - MONGO_URI=mongodb://localhost:27017/
-      - ELASTICSEARCH_HOST=http://elasticsearch:9200
+
+

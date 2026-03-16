@@ -2,7 +2,7 @@ from pymongo import *
 import logger
 import haversine
 
-client = MongoClient("MONGO_URI","mongodb://localhost:27017/")
+client = MongoClient("mongodb://localhost:27017/")
 db = client["hunter_db"]
 collection = db["hunter_data"]
 
@@ -14,7 +14,7 @@ def sort_by_time(document):
 def find_last_location(entity_id):
     all_intel_reports = []
 
-    cursor = collection.find({})# שאילתה שאני יעשה בהמשך
+    cursor = collection.find({"entity_id":entity_id,"signal_id":{"exists":True}})
 
     for document in cursor:
         all_intel_reports.append(document)
