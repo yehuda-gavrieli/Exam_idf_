@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: my_mongo
+    ports:
+      - "27017:27017"
+
+
+  elasticsearch:
+    image: elasticsearch:7.17.0
+    container_name: my_elastic
+    ports:
+      - "9200:9200"
