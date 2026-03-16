@@ -1,1 +1,6 @@
 kafka-python-ng==2.2.3
+elasticsearch
+fastapi
+uvicorn
+python-multipart
+pymongo
