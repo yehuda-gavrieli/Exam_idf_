@@ -1,18 +1,56 @@
-from pymongo import MongoClient
-from logger import log_event
+from pymongo import *
+import logger
+import haversine
 
-client = MongoClient("mongodb://localhost:27017/")
+client = MongoClient("MONGO_URI","mongodb://localhost:27017/")
 db = client["hunter_db"]
-collection1 = db["stations"]
-collection2 = db["measurements"]
-
-def add_station(id,lat,lon):
-    station_document = {"id":id , "lat":lat , "lon":lon}
-    db.collection1.insert_one(station_document)
-    print(f"{id} saved succeesfuly")
+collection = db["hunter_data"]
 
 
-data_station = db.collection1.find_one({id})
+def sort_by_time(document):
+    return document["timestamp"]
 
-if data_station:
+
+def find_last_location(entity_id):
+    all_intel_reports = []
+
+    cursor = collection.find({})# שאילתה שאני יעשה בהמשך
+
+    for document in cursor:
+        all_intel_reports.append(document)
+
+    if len(all_intel_reports) == 0:
+        return 0.0,0.0
     
+    all_intel_reports.sort(key=sort_by_time , reverse=True)
+
+    latest = all_intel_reports[0]
+
+    return latest["reported_lat"] , latest["reported_lon"]
+
+
+def handle_data(data):
+    entity_id = data.get("entity_id")
+
+    if "signal_id" in data:
+        old_lat,old_lon = find_last_location(entity_id)
+
+        new_lat = data.get("reported_lat")
+        new_lon = data.get("reported_lon")
+
+        if old_lat != 0:
+            distance = haversine.haversine_km(old_lat , old_lon , new_lat , new_lon)
+            print(f"target {entity_id} moved {distance} km")
+        else:
+            print("this is the first target report", entity_id)
+
+    elif ("result" not in data) and ("attck_id" in data):
+        print("warning attck on target" , {entity_id})
+
+    elif "result" in data:
+        res = data.get("result")
+        print(f"danage report for {entity_id} result= {res}")
+
+
+    collection.insert_one(data)
+
